@@ -37,8 +37,6 @@ if [ ! -z "$HIVEMQ_CLUSTER_JDBC_URL" ]; then
     ln -s /opt/hivemq-modules/database-cluster-discovery/bin/database-cluster-discovery-1.0.0.jar /opt/hivemq/plugins/database-cluster-discovery.jar
 fi
 
-
-
 # Enable Auth Plugin if necessary
 if [ "$HIVEMQ_DISABLE_AUTH_PLUGIN" == "true" ]; then
     echo "Not Activating Auth plugin due to HIVEMQ_DISABLE_AUTH_PLUGIN"
@@ -48,6 +46,23 @@ else
     ln -s /opt/hivemq-modules/fileauth/bin/file-authentication-plugin-3.1.1.jar /opt/hivemq/plugins/file-authentication-plugin-3.1.1.jar
     ln -s /opt/hivemq-modules/fileauth/conf/credentials.properties /opt/hivemq/conf/credentials.properties
     ln -s /opt/hivemq-modules/fileauth/conf/fileAuthConfiguration.properties /opt/hivemq/conf/fileAuthConfiguration.properties
+fi
+
+# Enable Kafka plugin if necessary
+if [ ! -z "$HIVEMQ_KAFKA_HOST" ]; then
+  echo "Installing the Kafka plugin"
+  HIVEMQ_KAFKA_PLUGIN_JAR_FILE_NAME=hivemq-kafka-plugin-1.0.0-SNAPSHOT'.jar'
+  echo $HIVEMQ_KAFKA_PLUGIN_JAR_FILE_NAME
+  sed -i "s/localhost/$HIVEMQ_KAFKA_HOST/g" /opt/hivemq-modules/kafka-plugin/conf/kafka-plugin.properties
+
+  if [ ! -z "$HIVEMQ_KAFKA_PORT" ]; then
+      sed -i "s/9092/$HIVEMQ_KAFKA_PORT/g" /opt/hivemq-modules/kafka-plugin/conf/kafka-plugin.properties
+  fi
+
+  ln -s /opt/hivemq-modules/kafka-plugin/$HIVEMQ_KAFKA_PLUGIN_JAR_FILE_NAME /opt/hivemq/plugins/$HIVEMQ_KAFKA_PLUGIN_JAR_FILE_NAME
+  ln -s /opt/hivemq-modules/kafka-plugin/conf/kafka-plugin.properties /opt/hivemq/conf/kafka-plugin.properties
+else
+  echo "NOT installing the Kafka plugin."
 fi
 
 # Enable Graphite metrics plugin if necessary.
